@@ -105,9 +105,9 @@ TELEGRAM_API_HASH=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TELEGRAM_CHANNEL=https://t.me/your_channel
 
 # MetaTrader 5 (Vantage)
-MT5_LOGIN=15839667
+MT5_LOGIN=12345678
 MT5_PASSWORD='your-password'
-MT5_SERVER=VantageInternational-Live 10
+MT5_SERVER=Metdatrader-Demo
 # Optional: full path to terminal64.exe (auto-detected if omitted)
 # MT5_PATH=C:\Program Files\MetaTrader 5\terminal64.exe
 
