@@ -5,7 +5,7 @@ automatically places / manages the corresponding trades on a MetaTrader 5
 (Vantage) account.
 
 ```
-Telegram channel ──► Telethon ──► Groq (Llama) parser ──► MetaTrader5 terminal
+Telegram channel -> Telethon -> Groq (Llama) parser -> MetaTrader5 terminal
    (signals)          (listener)     (extract intent)        (orders / SL-TP)
 ```
 
@@ -20,7 +20,7 @@ Telegram channel ──► Telethon ──► Groq (Llama) parser ──► Meta
    - `none`   – chat / commentary (ignored)
 3. **Execute** – the bot places or modifies orders on MT5 via the `MetaTrader5` package.
 
-### Signal format
+### Signal format to match the Telegram Channel
 
 A signal headline such as `buy 4230 - 4235` is an **entry price zone**, not an
 entry-plus-stop. The two numbers are the low/high bounds of where to enter; the
