@@ -1,4 +1,4 @@
-# Telegram → MT5 Trade Copier Bot
+# Telegram -> MT5 Trade Copier Bot
 
 Monitors a Telegram trading channel, parses each message with an AI model, and
 automatically places / manages the corresponding trades on a MetaTrader 5
@@ -28,19 +28,19 @@ entry-plus-stop. The two numbers are the low/high bounds of where to enter; the
 lines.
 
 ```
-buy 4230 - 4235        ← entry zone (low–high)
-SL: 4215               ← stop loss
-TP: 4250 4270          ← take-profit targets
+buy 4230 - 4235        entry zone (low–high)
+SL: 4215               stop loss
+TP: 4250 4270          take-profit targets
 ```
 
 **Entry selection** – the bot enters at the *best edge* of the zone for the
 trade's side and ignores the other bound:
-- **BUY**  → the **lower** bound (e.g. `4230`)
-- **SELL** → the **higher** bound (e.g. `3970`)
+- **BUY**  -> the **lower** bound (e.g. `4230`)
+- **SELL** -> the **higher** bound (e.g. `3970`)
 
 **Take-profit split** – controlled by `USE_TP1_ONLY`:
-- `False` → **two orders** at the same entry & SL, one targeting **TP1** and one **TP2**
-- `True`  → a single order at **TP1**
+- `False` -> **two orders** at the same entry & SL, one targeting **TP1** and one **TP2**
+- `True`  -> a single order at **TP1**
 
 | Example signal | Orders placed (`USE_TP1_ONLY=False`) |
 | --- | --- |
