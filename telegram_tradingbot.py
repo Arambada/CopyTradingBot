@@ -104,7 +104,10 @@ Return:
 Only fill a field when an explicit NUMERIC value is given. Do NOT infer breakeven,
 "entry", or any non-numeric stop — use null when no number is present.
 
-CASE 3 — anything else (chat, commentary, results, questions).
+CASE 3 — anything else (chat, commentary, results, questions, or an alert/teaser).
+A bare alert like "Gold sell now", "buy now", or "Ready signal" that contains NO numeric
+entry, stop loss, or take-profit is NOT actionable — it is just a teaser before the real
+signal. Return {"action": "none"} for these.
 Return: {"action": "none"}
 
 Return only the JSON object, no other text."""
@@ -322,13 +325,12 @@ def _choose_order(direction, market, entry, min_dist):
     return otype, entry, True
 
 
-def _entry_prices(signal: dict, direction: str) -> list:
-    """Entry price(s) to place orders at, derived from the signal's entry zone.
+def _entry_prices(signal: dict) -> list:
+    """Entry price to place the order at, derived from the signal's entry zone.
 
-    Uses the BEST edge of the zone for the trade's side — the lower bound for a
-    BUY, the higher bound for a SELL — and ignores the other bound. A single
-    price (or both bounds equal) -> that price. No entry given -> one market
-    order (represented as ``[None]``).
+    Always uses the LOWER bound of the zone (for both BUY and SELL); the higher
+    bound is ignored. A single price (or both bounds equal) -> that price. No
+    entry given -> one market order (represented as ``[None]``).
     """
     lo = signal.get("entry_low")
     hi = signal.get("entry_high")
@@ -338,7 +340,7 @@ def _entry_prices(signal: dict, direction: str) -> list:
     prices = [float(v) for v in (lo, hi) if v is not None]
     if not prices:
         return [None]
-    return [min(prices)] if direction == "BUY" else [max(prices)]
+    return [min(prices)]
 
 
 def _tp_targets(signal: dict) -> list:
@@ -357,10 +359,10 @@ def _tp_targets(signal: dict) -> list:
 def place_trade(signal: dict) -> list[int]:
     """Place order(s) for a parsed signal and return the MT5 ticket(s) opened.
 
-    The entry is the best edge of the zone for the trade's side (lower bound for
-    BUY, higher bound for SELL; the other bound is ignored). When TP2 is present
-    and ``USE_TP1_ONLY`` is off, TWO orders are placed at that same entry and SL
-    — one targeting TP1, the other TP2. Returns the list of accepted tickets.
+    The entry is the lower bound of the zone (for both BUY and SELL; the higher
+    bound is ignored). When TP2 is present and ``USE_TP1_ONLY`` is off, TWO
+    orders are placed at that same entry and SL — one targeting TP1, the other
+    TP2. Returns the list of accepted tickets.
     """
     direction = signal.get("direction", "").upper()
     if direction not in ("BUY", "SELL"):
@@ -368,7 +370,16 @@ def place_trade(signal: dict) -> list[int]:
         return []
 
     sl = signal.get("sl")
-    entry = _entry_prices(signal, direction)[0]
+    # Safety guard: never open a position without a stop loss. Teaser alerts like
+    # "Gold sell now" (no entry/SL/TP) parse as an open signal — refuse them and
+    # wait for the full signal that carries an SL.
+    if sl is None:
+        log.warning(
+            "Signal has no stop loss — skipping. The bot will not open a trade "
+            "without an SL (likely an incomplete teaser; wait for the full signal).")
+        return []
+
+    entry = _entry_prices(signal)[0]
 
     tickets = []
     for tp in _tp_targets(signal):
